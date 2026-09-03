@@ -27,7 +27,7 @@ export default function App() {
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Discovery failed');
       setLeads(data.leads); setMode(data.mode);
-      setNotice(data.mode === 'demo' ? `Demo mode: ${data.added} sample companies loaded. Add Google Search credentials for live discovery.` : `${data.added} hiring companies with email addresses found.`);
+      setNotice(data.mode === 'demo' ? `Demo mode: ${data.added} sample companies loaded. Add your SerpApi key for live discovery.` : `${data.added} hiring companies with email addresses found.`);
     } catch (e2) { setNotice(e2.message); }
     finally { setLoading(false); }
   };
