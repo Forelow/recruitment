@@ -58,19 +58,28 @@ const DEMO = [
 ];
 
 export async function discoverLeads() {
-  const key = process.env.GOOGLE_SEARCH_API_KEY;
-  const cx = process.env.GOOGLE_SEARCH_CX;
-  if (!key || !cx) return { mode: 'demo', leads: DEMO };
+  const key = process.env.SERPAPI_API_KEY;
+  if (!key) return { mode: 'demo', leads: DEMO };
 
   const location = 'Singapore';
   const query = 'jobs hiring company Singapore -recruitment -staffing -agency -government';
-  const { data } = await axios.get('https://www.googleapis.com/customsearch/v1', {
+  const { data } = await axios.get('https://serpapi.com/search.json', {
     timeout: 12000,
-    params: { key, cx, q: query, num: 10 }
+    params: {
+      engine: 'google',
+      api_key: key,
+      q: query,
+      location,
+      gl: 'sg',
+      hl: 'en',
+      num: 10
+    }
   });
 
+  if (data.error) throw new Error(`SerpApi error: ${data.error}`);
+
   const leads = [];
-  for (const item of data.items || []) {
+  for (const item of data.organic_results || []) {
     const domain = domainFromUrl(item.link);
     const resultText = `${item.title} ${item.snippet}`;
     if (!domain || isExcluded(resultText, domain) || !isLocalCompany(resultText, domain)) continue;
@@ -88,7 +97,7 @@ export async function discoverLeads() {
       location,
       job_title: item.title,
       job_url: item.link,
-      source: 'Google Programmable Search',
+      source: 'SerpApi Google Search',
       date_posted: null,
       contact_name: null,
       contact_role: null,
