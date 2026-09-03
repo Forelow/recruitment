@@ -2,9 +2,9 @@
 
 This MVP implements the core flow:
 
-1. Click one button to search for Singapore companies that appear to be hiring.
+1. Choose a limit from 100 to 1,000 and search for Singapore companies that appear to be hiring.
 2. Filter obvious government/recruitment-agency results.
-3. Collect a public business email from the company website.
+3. Collect a public business email from the company website and retain companies where no email is found.
 4. Store and de-duplicate leads in a lightweight local JSON file.
 5. Inspect and select individual companies or Select All.
 6. Write one email template using variables.
@@ -36,7 +36,21 @@ Create a SerpApi account, copy the private API key from its dashboard, then set:
 SERPAPI_API_KEY=your-serpapi-key
 ```
 
-No `cx` value is needed. The connector requests Singapore-focused Google results through SerpApi, locates relevant public company pages, and then attempts to read a public business email from the returned company site. Results without an email address are not added to the list.
+No `cx` value is needed. The connector requests Singapore-focused Google results through SerpApi, locates relevant public company pages, and then attempts to read a public business email from the returned company site. Companies without a discovered email remain visible under the **Email not found** filter but cannot be selected for sending.
+
+Discovery runs as a background job, so larger searches can report progress without keeping one HTTP request open. The interface shows candidates found, websites checked, emails found and SerpApi searches used. Companies are de-duplicated by domain.
+
+Optional discovery controls:
+
+```env
+DISCOVERY_CONCURRENCY=5
+SERPAPI_MAX_REQUESTS=30
+CONTACT_TIMEOUT_MS=6000
+```
+
+- `DISCOVERY_CONCURRENCY` controls how many company websites are checked at once (1–10).
+- `SERPAPI_MAX_REQUESTS` caps SerpApi usage for one discovery job (1–100).
+- `CONTACT_TIMEOUT_MS` controls the timeout for each public company page (2,000–15,000 ms).
 
 ## 2. Configure email
 
@@ -75,7 +89,8 @@ Open the Vite URL shown in the terminal (normally `http://localhost:5173`).
 
 ## Current Version 1 limitations
 
-- Search connector processes at most 10 SerpApi results per request.
+- A target of 1,000 means up to 1,000 candidate company domains, not 1,000 guaranteed emails.
+- The actual number depends on available search pages, duplicate domains, exclusions and public contact information.
 - Company-name extraction is heuristic and should later be improved.
 - Contact discovery is intentionally conservative and only checks a few public pages on the company domain.
 - It does not bypass CAPTCHAs, authentication, anti-bot controls or site restrictions.
