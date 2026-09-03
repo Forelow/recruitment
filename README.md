@@ -26,18 +26,17 @@ npm run dev
 
 Backend runs at `http://localhost:4000`.
 
-If `GOOGLE_SEARCH_API_KEY` and `GOOGLE_SEARCH_CX` are blank, discovery runs in **demo mode** so the rest of the application can be tested immediately.
+If `SERPAPI_API_KEY` is blank, discovery runs in **demo mode** so the rest of the application can be tested immediately.
 
 ### Live discovery
 
-Create a Google Programmable Search Engine and enable the Custom Search JSON API, then set:
+Create a SerpApi account, copy the private API key from its dashboard, then set:
 
 ```env
-GOOGLE_SEARCH_API_KEY=...
-GOOGLE_SEARCH_CX=...
+SERPAPI_API_KEY=your-serpapi-key
 ```
 
-The current source connector intentionally avoids scraping job boards directly. It uses search results to locate relevant public pages and then attempts to read a public business email from the returned company site. Results without an email address are not added to the list.
+No `cx` value is needed. The connector requests Singapore-focused Google results through SerpApi, locates relevant public company pages, and then attempts to read a public business email from the returned company site. Results without an email address are not added to the list.
 
 ## 2. Configure email
 
@@ -76,7 +75,7 @@ Open the Vite URL shown in the terminal (normally `http://localhost:5173`).
 
 ## Current Version 1 limitations
 
-- Search connector returns at most 10 Google results per request.
+- Search connector processes at most 10 SerpApi results per request.
 - Company-name extraction is heuristic and should later be improved.
 - Contact discovery is intentionally conservative and only checks a few public pages on the company domain.
 - It does not bypass CAPTCHAs, authentication, anti-bot controls or site restrictions.
